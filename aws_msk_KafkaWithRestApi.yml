@@ -1,6 +1,14 @@
----
 AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
+  AvailabilityZoneOne: 
+    Type: String
+    Default: us-east-1a
+  AvailabilityZoneTwo: 
+    Type: String
+    Default: us-east-1b
+  AvailabilityZoneThree: 
+    Type: String
+    Default: us-east-1c
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
@@ -50,11 +58,7 @@ Resources:
   PublicSubnetOne:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone:
-        Fn::Select:
-        - 0
-        - Fn::GetAZs:
-            Ref: AWS::Region
+      AvailabilityZone: 
       VpcId:
         Ref: VPC
       CidrBlock:
@@ -73,10 +77,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone:
-        Fn::Select:
-        - 0
-        - Fn::GetAZs:
-            Ref: AWS::Region
+        Ref: AvailabilityZoneOne
       VpcId:
         Ref: VPC
       CidrBlock:
@@ -94,10 +95,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone:
-        Fn::Select:
-        - 0
-        - Fn::GetAZs:
-            Ref: AWS::Region
+        Ref: AvailabilityZoneTwo
       VpcId:
         Ref: VPC
       CidrBlock:
@@ -115,10 +113,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone:
-        Fn::Select:
-        - 0
-        - Fn::GetAZs:
-            Ref: AWS::Region
+        Ref: AvailabilityZoneThree
       VpcId:
         Ref: VPC
       CidrBlock:
