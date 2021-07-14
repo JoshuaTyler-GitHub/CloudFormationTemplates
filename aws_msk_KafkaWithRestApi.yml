@@ -1,14 +1,33 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
-  AvailabilityZoneOne: 
+  AvailabilityZone1: 
     Type: String
     Default: us-east-1a
-  AvailabilityZoneTwo: 
+  AvailabilityZone2: 
     Type: String
     Default: us-east-1b
-  AvailabilityZoneThree: 
+  AvailabilityZone3: 
     Type: String
     Default: us-east-1c
+  KafkaEC2Instance:
+    Type: String
+    Default: m5.large
+    AllowedValues:
+      - t2.micro
+      - m5.large
+  KafkaMskClusterInstance:
+    Type: String
+    Default: kafka.m5.large
+    AllowedValues:
+      - kafka.t3.small
+      - kafka.m5.large
+      - kafka.m5.xlarge
+      - kafka.m5.2xlarge
+      - kafka.m5.4xlarge
+      - kafka.m5.8xlarge
+      - kafka.m5.12xlarge
+      - kafka.m5.16xlarge
+      - kafka.m5.24xlarge
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
@@ -58,7 +77,8 @@ Resources:
   PublicSubnetOne:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: 
+      AvailabilityZone:
+        Ref: AvailabilityZone1
       VpcId:
         Ref: VPC
       CidrBlock:
@@ -77,7 +97,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone:
-        Ref: AvailabilityZoneOne
+        Ref: AvailabilityZone1
       VpcId:
         Ref: VPC
       CidrBlock:
@@ -95,7 +115,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone:
-        Ref: AvailabilityZoneTwo
+        Ref: AvailabilityZone2
       VpcId:
         Ref: VPC
       CidrBlock:
@@ -113,7 +133,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone:
-        Ref: AvailabilityZoneThree
+        Ref: AvailabilityZone3
       VpcId:
         Ref: VPC
       CidrBlock:
@@ -259,16 +279,14 @@ Resources:
   KafkaClientEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: m5.large
+      InstanceType:
+        Ref: KafkaEC2Instance
       KeyName:
         Ref: KeyName
       IamInstanceProfile:
         Ref: EC2InstanceProfile
       AvailabilityZone:
-        Fn::Select:
-        - 0
-        - Fn::GetAZs:
-            Ref: AWS::Region
+        Ref: AvailabilityZone1
       SubnetId:
         Ref: PublicSubnetOne
       SecurityGroupIds:
@@ -341,7 +359,8 @@ Resources:
         - Ref: PrivateSubnetOne
         - Ref: PrivateSubnetTwo
         - Ref: PrivateSubnetThree
-        InstanceType: kafka.m5.large
+        InstanceType:
+          Ref: KafkaMskClusterInstance
         SecurityGroups:
         - Fn::GetAtt:
           - MSKSecurityGroup
