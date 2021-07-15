@@ -5,6 +5,8 @@ arn:aws:kafka:us-east-1:466486113081:cluster/MSKCluster/efa6dcbc-b91b-482e-a331-
 ./kafka-rest-start /home/ec2-user/confluent-5.3.1/etc/kafka-rest/kafka-rest.properties
 ./kafka-rest-stop /home/ec2-user/confluent-5.3.1/etc/kafka-rest/kafka-rest.properties
 
+User the Trust store: cp /usr/lib/jvm/JDKFolder/jre/lib/security/cacerts /tmp/kafka.client.truststore.jks
+
 ./kafka-console-producer.sh --broker-list b-2.mskcluster.lkezqu.c1.kafka.us-east-1.amazonaws.com:9092,b-1.mskcluster.lkezqu.c1.kafka.us-east-1.amazonaws.com:9092,b-3.mskcluster.lkezqu.c1.kafka.us-east-1.amazonaws.com:9092 --producer.config client.properties --topic KafkaDemoTopic
 
 ./kafka-console-consumer.sh --bootstrap-server b-2.mskcluster.lkezqu.c1.kafka.us-east-1.amazonaws.com:9092,b-1.mskcluster.lkezqu.c1.kafka.us-east-1.amazonaws.com:9092,b-3.mskcluster.lkezqu.c1.kafka.us-east-1.amazonaws.com:9092 --topic KafkaDemoTopic --from-beginning 
