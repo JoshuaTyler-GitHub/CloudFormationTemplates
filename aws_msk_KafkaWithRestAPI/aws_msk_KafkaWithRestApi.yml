@@ -2,13 +2,13 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   AvailabilityZone1: 
     Type: String
-    Default: us-gov-west-1a
+    Default: us-east-1a
   AvailabilityZone2: 
     Type: String
-    Default: us-gov-west-1b
+    Default: us-east-1b
   AvailabilityZone3: 
     Type: String
-    Default: us-gov-west-1c
+    Default: us-east-1c
   KafkaEC2Instance:
     Type: String
     Default: t2.micro
@@ -53,6 +53,10 @@ Mappings:
     PrivateThree:
       CIDR: 10.0.3.0/24
   RegionAMI:
+    us-east-1:
+      HVM64: ami-a13749a2
+    us-west-1:
+      HVM64: ami-fdd8428a
     us-gov-west-1:
       HVM64: ami-0661f767
 Resources:
@@ -291,7 +295,7 @@ Resources:
       - Fn::GetAtt:
         - KafkaClientInstanceSecurityGroup
         - GroupId
-      ImageId: ami-02bac4e7d9f399735
+      ImageId: ami-008a8487adc2b32ec
       Tags:
       - Key: Name
         Value: KafkaClientInstance
