@@ -52,13 +52,6 @@ Mappings:
       CIDR: 10.0.2.0/24
     PrivateThree:
       CIDR: 10.0.3.0/24
-  RegionAMI:
-    us-east-1:
-      HVM64: ami-a13749a2
-    us-west-1:
-      HVM64: ami-fdd8428a
-    us-gov-west-1:
-      HVM64: ami-0661f767
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -295,7 +288,7 @@ Resources:
       - Fn::GetAtt:
         - KafkaClientInstanceSecurityGroup
         - GroupId
-      ImageId: ami-008a8487adc2b32ec
+      ImageId: ami-0dc2d3e4c0f9ebd18
       Tags:
       - Key: Name
         Value: KafkaClientInstance
