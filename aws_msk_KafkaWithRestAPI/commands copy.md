@@ -4,20 +4,22 @@
 $ aws configure
 
 # 3) Get the <ZooKeeperConnectionString> and other information about your cluster by entering the following code
-$ aws kafka describe-cluster --region us-east-1 --cluster-arn arn:aws:kafka:us-east-1:949307069509:cluster/MSKCluster/e6992886-4d5c-401f-970e-0ae255c42c07-1
+$ aws kafka describe-cluster --region us-east-1 --cluster-arn arn:aws:kafka:us-east-1:466486113081:cluster/MSKCluster/0ff8ac77-1604-4a85-8bfc-c2fb3199dc8a-1
 
-"ZookeeperConnectString": z-3.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:2181,z-1.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:2181,z-2.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:2181
+ARN: arn:aws:kafka:us-east-1:466486113081:cluster/MSKCluster/0ff8ac77-1604-4a85-8bfc-c2fb3199dc8a-1
 
-# 4) Get the <BootstrapBrokerString> by entering the following code provide your region & cluster ARN
-$ aws kafka get-bootstrap-brokers --region us-east-1 --cluster-arn arn:aws:kafka:us-east-1:949307069509:cluster/MSKCluster/e6992886-4d5c-401f-970e-0ae255c42c07-1
+BOOTSTRAPBROKERSTRING: b-2.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:9092,b-1.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:9092,b-3.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:9092
 
-"BootstrapBrokerString": "b-3.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:9092,b-2.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:9092,b-1.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:9092"
+ZOOKEEPER: z-3.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:2181,z-1.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:2181,z-2.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:2181
 
 java-1.8.0-openjdk-1.8.0.282.b08-1.amzn2.0.1.x86_64
 
 cp /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.282.b08-1.amzn2.0.1.x86_64/jre/lib/security/cacerts /tmp/kafka.client.truststore.jks
 
-./kafka-console-producer.sh --broker-list b-3.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:9092,b-2.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:9092,b-1.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:9092 --producer.config client.properties --topic dante
+# 4) Get the <BootstrapBrokerString> by entering the following code provide your region & cluster ARN
+$ aws kafka get-bootstrap-brokers --region us-east-1 --cluster-arn arn:aws:kafka:us-east-1:466486113081:cluster/MSKCluster/0ff8ac77-1604-4a85-8bfc-c2fb3199dc8a-1
+
+./kafka-console-producer.sh --broker-list b-2.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:9092,b-1.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:9092,b-3.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:9092 --producer.config client.properties --topic dante
 
 
 ./kafka-console-consumer.sh
@@ -28,7 +30,7 @@ cp /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.282.b08-1.amzn2.0.1.x86_64/jre/lib/secu
 # 5) Go to the bin folder (kafka/kafka_2.12-2.2.1/bin/) of the Apache Kafka installation on the client machine.
 
 # 6) Create a Kafka Topic by providing the <ZooKeeperConnectionString> from step 3 (you should receive a confirmation message):
-$ ./kafka-topics.sh --create --zookeeper z-3.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:2181,z-1.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:2181,z-2.mskcluster.psuucd.c1.kafka.us-east-1.amazonaws.com:2181 --replication-factor 3 --partitions 1 --topic dante
+$ ./kafka-topics.sh --create --zookeeper z-3.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:2181,z-1.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:2181,z-2.mskcluster.fbwto3.c1.kafka.us-east-1.amazonaws.com:2181 --replication-factor 3 --partitions 1 --topic dante
 
 # 7) To connect the Kafka REST server to the Amazon MSK cluster, modify kafka-rest.properties in the directory (/home/ec2-user/confluent-5.3.1/etc/kafka-rest/) to point to your Amazon MSK’s <ZooKeeperConnectionString> and <BootstrapBrokerString> information.
 
