@@ -1,21 +1,18 @@
 # 1) SSH into the EC2 instance created
 
-# 2) Configure your AWS Credentials
-$ aws configure
-
-# 3) Get the <ZooKeeperConnectionString> and other information about your cluster by entering the following code
+# 2) Get the <ZooKeeperConnectionString> and other information about your cluster by entering the following code
 $ aws kafka describe-cluster 
     --region <Replace_With_us-east-1_or_us-west-2> 
     --cluster-arn <Replace_With_Your_cluster-arn> 
 
-# 4) Get the <BootstrapBrokerString> by entering the following code provide your region & cluster ARN
+# 3) Get the <BootstrapBrokerString> by entering the following code provide your region & cluster ARN
 $ aws kafka get-bootstrap-brokers
     --region <Replace_With_us-east-1_or_us-west-2>
     --cluster-arn <Replace_With_us-east-1_or_us-west-2>
 
-# 5) Go to the bin folder (kafka/kafka_2.12-2.2.1/bin/) of the Apache Kafka installation on the client machine.
+# 4) Go to the bin folder (kafka/kafka_2.12-2.2.1/bin/) of the Apache Kafka installation on the client machine.
 
-# 6) Create a Kafka Topic by providing the <ZooKeeperConnectionString> from step 3 (you should receive a confirmation message):
+# 5) Create a Kafka Topic by providing the <ZooKeeperConnectionString> from step 3 (you should receive a confirmation message):
 $ ./kafka-topics.sh
     --create
     --zookeeper <Replace_With_Your_ZookeeperConnectString>
@@ -23,9 +20,9 @@ $ ./kafka-topics.sh
     --partitions 1
     --topic <Replace_With_Your_Desired_Topic_Name_String>
 
-# 7) To connect the Kafka REST server to the Amazon MSK cluster, modify kafka-rest.properties in the directory (/home/ec2-user/confluent-5.3.1/etc/kafka-rest/) to point to your Amazon MSK’s <ZooKeeperConnectionString> and <BootstrapBrokerString> information.
+# 6) To connect the Kafka REST server to the Amazon MSK cluster, modify kafka-rest.properties in the directory (/home/ec2-user/confluent-5.3.1/etc/kafka-rest/) to point to your Amazon MSK’s <ZooKeeperConnectionString> and <BootstrapBrokerString> information.
 
-# 8) Generate the server and client SSL Certificates. For more information, see Creating SLL Keys and Certificates on the Confluent website. Add the necessary property configurations to the kafka-rest.properties:
+# 7) Generate the server and client SSL Certificates. For more information, see Creating SLL Keys and Certificates on the Confluent website. Add the necessary property configurations to the kafka-rest.properties:
     listeners=http://0.0.0.0:8082,https://0.0.0.0:8085
     ssl.truststore.location=<Replace_With_Your_tuststore.jks>
     ssl.truststore.password=<Replace_With_Your_tuststorepassword>
@@ -33,7 +30,7 @@ $ ./kafka-topics.sh
     ssl.keystore.password=<Replace_With_Your_keystorepassword>
     ssl.key.password=<Replace_With_Your_sslkeypassword>
 
-# 9) Configure API Gateway
+# 8) Configure API Gateway
     9.1) On the API Gateway console, choose Create API.
     9.2) For API type, choose REST API.
     9.3) Choose Build.
@@ -60,7 +57,7 @@ $ ./kafka-topics.sh
     9.24) Choose Deploy.
     9.25) Record the Invoke URL after you have deployed the API.
 
-# 10) Test the end-to-end processes by producing and consuming messages to Amazon MSK. Complete the following steps:
+# 9) Test the end-to-end processes by producing and consuming messages to Amazon MSK. Complete the following steps:
     10.1) Go to the confluent-5.3.1/bin directory and start the kafka-rest service. See the following code:
             $ ./kafka-rest-start /home/ec2-user/confluent-5.3.1/etc/kafka-rest/kafka-rest.properties
         If the service already started, you can stop it with the following code:

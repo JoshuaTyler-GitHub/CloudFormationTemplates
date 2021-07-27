@@ -293,17 +293,19 @@ Resources:
       - Key: Name
         Value: KafkaClientInstance
       UserData:
-        Fn::Base64: "#!/bin/bash\n
-          yum update -y \n
-          yum install python3.7 -y\n
-          yum install java-1.8.0-openjdk-devel -y\n
-          cd /home/ec2-user\n
-          echo\"export PATH=.local/bin:$PATH\" >> .bash_profile\nmkdir kafka\n
-          cd kafka\n
-          wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz\n
-          tar -xzf kafka_2.12-2.2.1.tgz\n
-          cd /home/ec2-user\n
-          su -c \"python3.7 get-pip.py --user\" -s /bin/sh ec2-user\n"
+        Fn::Base64: "
+          #!/bin/bash\n
+            yum update -y \n
+            yum install python3.7 -y\n
+            yum install java-1.8.0-openjdk-devel -y\n
+            cd /home/ec2-user\n
+            echo\"export PATH=.local/bin:$PATH\" >> .bash_profile\nmkdir kafka\n
+            cd kafka\n
+            wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz\n
+            tar -xzf kafka_2.12-2.2.1.tgz\n
+            cd /home/ec2-user\n
+            su -c \"python3.7 get-pip.py --user\" -s /bin/sh ec2-user\n
+          \n"
     Metadata:
       AWS::CloudFormation::Designer:
         id: 25e7995f-31fc-45b0-b790-42bcb519905a
