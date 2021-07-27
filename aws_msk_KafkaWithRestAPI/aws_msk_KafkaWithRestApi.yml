@@ -65,7 +65,7 @@ Resources:
         - CIDR
       Tags:
       - Key: Name
-        Value: MMVPC
+        Value: DanteKafkaVpc
     Metadata:
       AWS::CloudFormation::Designer:
         id: e191108b-e241-404a-bed2-b2863bcd5235
@@ -84,7 +84,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
       - Key: Name
-        Value: MMPublicSubnet
+        Value: DanteKafkaPublicSubnet
     Metadata:
       AWS::CloudFormation::Designer:
         id: 90cff42d-8429-4a50-b584-5a2ba16651ea
@@ -102,7 +102,7 @@ Resources:
         - CIDR
       Tags:
       - Key: Name
-        Value: MMPrivateSubnetOne
+        Value: DanteKafkaPrivateSubnetOne
     Metadata:
       AWS::CloudFormation::Designer:
         id: be121547-ef38-4d55-a9a9-f67eb35c9cd0
@@ -120,7 +120,7 @@ Resources:
         - CIDR
       Tags:
       - Key: Name
-        Value: MMPrivateSubnetTwo
+        Value: DanteKafkaPrivateSubnetTwo
     Metadata:
       AWS::CloudFormation::Designer:
         id: 1a1c22e5-745b-443d-93d6-78c3572de3c4
@@ -138,7 +138,7 @@ Resources:
         - CIDR
       Tags:
       - Key: Name
-        Value: MMPrivateSubnetThree
+        Value: DanteKafkaPrivateSubnetThree
     Metadata:
       AWS::CloudFormation::Designer:
         id: 69ad49b5-ffb5-4019-82dd-1b5433531511
@@ -297,21 +297,13 @@ Resources:
           yum update -y \n
           yum install python3.7 -y\n
           yum install java-1.8.0-openjdk-devel -y\n
-          yum erase awscli -y\n
           cd /home/ec2-user\n
           echo\"export PATH=.local/bin:$PATH\" >> .bash_profile\nmkdir kafka\n
-          mkdir mm\n
           cd kafka\n
           wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz\n
           tar -xzf kafka_2.12-2.2.1.tgz\n
           cd /home/ec2-user\n
-          curl -O http://packages.confluent.io/archive/5.3/confluent-5.3.1-2.12.zip\n
-          unzip confluent-5.3.1-2.12.zip\nwget https://bootstrap.pypa.io/get-pip.py\n
-          su -c \"python3.7 get-pip.py --user\" -s /bin/sh ec2-user\n
-          su -c \"/home/ec2-user/.local/bin/pip3 install boto3 --user\" -s /bin/sh ec2-user\n
-          su -c \"/home/ec2-user/.local/bin/pip3 install awscli --user\" -s /bin/sh ec2-user\n
-          chown -R ec2-user ./kafka\n
-          chgrp -R ec2-user ./kafka\nchown -R ec2-user ./mm\nchgrp -R ec2-user ./mm\n"
+          su -c \"python3.7 get-pip.py --user\" -s /bin/sh ec2-user\n"
     Metadata:
       AWS::CloudFormation::Designer:
         id: 25e7995f-31fc-45b0-b790-42bcb519905a
@@ -404,7 +396,7 @@ Outputs:
       - KafkaClientEC2Instance
       - PublicDnsName
   MSKClusterArn:
-    Description: The Arn for the MSKMMCluster1 MSK cluster
+    Description: The Arn for the MSKDanteKafkaCluster1 MSK cluster
     Value:
       Ref: MSKCluster
 Metadata:
