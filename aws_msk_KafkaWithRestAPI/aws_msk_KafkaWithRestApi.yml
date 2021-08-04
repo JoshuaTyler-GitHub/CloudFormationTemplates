@@ -1,5 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
+  ApplicationName:
+    Type: String
+    Default: CPS-KafkaStack
   AvailabilityZone1: 
     Type: String
     Default: us-east-1a
@@ -65,10 +68,7 @@ Resources:
         - CIDR
       Tags:
       - Key: Name
-        Value: DanteKafkaVpc
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: e191108b-e241-404a-bed2-b2863bcd5235
+        Value: !Join ["-", [!Ref ApplicationName, "VPC"]]
   PublicSubnetOne:
     Type: AWS::EC2::Subnet
     Properties:
@@ -84,10 +84,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
       - Key: Name
-        Value: DanteKafkaPublicSubnet
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 90cff42d-8429-4a50-b584-5a2ba16651ea
+        Value: !Join ["-", [!Ref ApplicationName, "PublicSubnet"]]
   PrivateSubnetOne:
     Type: AWS::EC2::Subnet
     Properties:
@@ -102,10 +99,7 @@ Resources:
         - CIDR
       Tags:
       - Key: Name
-        Value: DanteKafkaPrivateSubnetOne
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: be121547-ef38-4d55-a9a9-f67eb35c9cd0
+        Value: !Join ["-", [!Ref ApplicationName, "PrivateSubnetOne"]]
   PrivateSubnetTwo:
     Type: AWS::EC2::Subnet
     Properties:
@@ -120,10 +114,7 @@ Resources:
         - CIDR
       Tags:
       - Key: Name
-        Value: DanteKafkaPrivateSubnetTwo
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 1a1c22e5-745b-443d-93d6-78c3572de3c4
+        Value: !Join ["-", [!Ref ApplicationName, "PrivateSubnetTwo"]]
   PrivateSubnetThree:
     Type: AWS::EC2::Subnet
     Properties:
@@ -138,15 +129,9 @@ Resources:
         - CIDR
       Tags:
       - Key: Name
-        Value: DanteKafkaPrivateSubnetThree
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 69ad49b5-ffb5-4019-82dd-1b5433531511
+        Value: !Join ["-", [!Ref ApplicationName, "PrivateSubnetThree"]]
   InternetGateway:
     Type: AWS::EC2::InternetGateway
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: d2a821e3-5c45-46a4-92fd-09268f72f679
   GatewayAttachement:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -154,17 +139,11 @@ Resources:
         Ref: VPC
       InternetGatewayId:
         Ref: InternetGateway
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 988bff04-9cdd-4ce1-8b5d-59fc3291eae1
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId:
         Ref: VPC
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 93747341-451f-4c6e-8265-6873b110ae9e
   PublicRoute:
     Type: AWS::EC2::Route
     DependsOn: GatewayAttachement
@@ -174,9 +153,6 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId:
         Ref: InternetGateway
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 412c8444-e8b8-43eb-8c07-3f822c921e34
   PublicSubnetOneRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -184,17 +160,11 @@ Resources:
         Ref: PublicSubnetOne
       RouteTableId:
         Ref: PublicRouteTable
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: c2c64928-4fe4-4640-a449-08cdc9e50d84
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId:
         Ref: VPC
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 7a45b627-d06a-4956-9f4b-a79b5e65bc7d
   PrivateSubnetOneRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -202,9 +172,6 @@ Resources:
         Ref: PrivateRouteTable
       SubnetId:
         Ref: PrivateSubnetOne
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 912ef118-eda5-437f-afd7-3f92d83fd70b
   PrivateSubnetTwoRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -212,9 +179,6 @@ Resources:
         Ref: PrivateRouteTable
       SubnetId:
         Ref: PrivateSubnetTwo
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: d345d815-288f-4446-add0-dd637cc6c57f
   PrivateSubnetThreeRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -222,9 +186,6 @@ Resources:
         Ref: PrivateRouteTable
       SubnetId:
         Ref: PrivateSubnetThree
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 4f6ec5cd-f063-4163-8494-31bd55bcb27f
   KafkaClientInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -237,9 +198,6 @@ Resources:
         ToPort: 22
         CidrIp:
           Ref: SSHLocation
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 758d2702-7bfd-470e-84a0-5101471dd251
   MSKSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -268,9 +226,9 @@ Resources:
           Fn::GetAtt:
           - KafkaClientInstanceSecurityGroup
           - GroupId
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 20d8d324-9da6-49f9-9e37-4bd433625c47
+      Tags:
+      - Key: Name
+        Value: !Join ["-", [!Ref ApplicationName, "MSKSecurityGroup"]]
   KafkaClientEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
@@ -291,13 +249,16 @@ Resources:
       ImageId: ami-0dc2d3e4c0f9ebd18
       Tags:
       - Key: Name
-        Value: KafkaClientInstance
+        Value: !Join ["-", [!Ref ApplicationName, "ClientInstance"]]
       UserData:
         Fn::Base64: "
           #!/bin/bash\n
             yum update -y \n
             yum install python3.7 -y\n
             yum install java-1.8.0-openjdk-devel -y\n
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+            . ~/.nvm/nvm.sh
+            nvm install node
             cd /home/ec2-user\n
             echo\"export PATH=.local/bin:$PATH\" >> .bash_profile\nmkdir kafka\n
             cd kafka\n
@@ -306,9 +267,6 @@ Resources:
             cd /home/ec2-user\n
             su -c \"python3.7 get-pip.py --user\" -s /bin/sh ec2-user\n
           \n"
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 25e7995f-31fc-45b0-b790-42bcb519905a
   EC2Role:
     Type: AWS::IAM::Role
     Properties:
@@ -324,18 +282,12 @@ Resources:
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/AmazonMSKFullAccess
       - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 268a951d-285d-438a-a365-d135a51bd01c
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: EC2MSKCFProfile
+      InstanceProfileName: !Join ["-", [!Ref ApplicationName, "EC2InstanceProfile"]]
       Roles:
       - Ref: EC2Role
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 01de5e28-2175-45f1-a37f-65e5bd7d9356
   MSKCluster:
     Type: AWS::MSK::Cluster
     Properties:
@@ -352,14 +304,10 @@ Resources:
           - GroupId
         StorageInfo:
           EBSStorageInfo:
-            VolumeSize: 2000
-      ClusterName: MSKCluster
-      EnhancedMonitoring: PER_TOPIC_PER_BROKER
-      KafkaVersion: 2.2.1
+            VolumeSize: 100
+      ClusterName: !Join ["-", [!Ref ApplicationName, "MSKCluster"]]
+      KafkaVersion: 2.6.1
       NumberOfBrokerNodes: 3
-    Metadata:
-      AWS::CloudFormation::Designer:
-        id: 56f5417a-ddff-49c4-9f30-8041824a0601
 Outputs:
   VPCId:
     Description: The ID of the VPC created
@@ -394,6 +342,6 @@ Outputs:
       - KafkaClientEC2Instance
       - PublicDnsName
   MSKClusterArn:
-    Description: The Arn for the MSKDanteKafkaCluster1 MSK cluster
+    Description: The Arn for the MSKCluster MSK cluster
     Value:
       Ref: MSKCluster

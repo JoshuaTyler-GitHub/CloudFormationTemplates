@@ -10,9 +10,23 @@ $ aws kafka get-bootstrap-brokers
     --region <Replace_With_us-east-1_or_us-west-2>
     --cluster-arn <Replace_With_us-east-1_or_us-west-2>
 
-# 4) Go to the bin folder (kafka/kafka_2.12-2.2.1/bin/) of the Apache Kafka installation on the client machine.
+# 4) Setup your SSL Truststore. Go to the bin folder (kafka/kafka_2.12-2.2.1/bin/) of the Apache Kafka installation on the client machine and setup your client.properties folder in the kafka/bin
+    4.1)    sudo touch client.properties
+            sudo chmod 777 client.properties
+            vim client.properties
 
-# 5) Create a Kafka Topic by providing the <ZooKeeperConnectionString> from step 3 (you should receive a confirmation message):
+    4.2) client.properties content
+        =======================
+        security.protocol=SSL
+        ssl.truststore.location=/tmp/kafka.client.truststore.jks
+        =======================
+
+    4.3) copy your Java JVM JDK security cacerts to the tmp truststore location
+        cp /usr/lib/jvm/<Java_JDK>/jre/lib/security/cacerts /tmp/kafka.client.truststore.jks
+        (where <Java_JDK> looks like: java-1.8.0-openjdk-1.8.0.282.b08-1.amzn2.0.1.x86_64)
+
+
+# 5) Create a Kafka Topic by providing the <ZooKeeperConnectionString> from step 3 (you should receive a confirmation message) (replication factor is the number of subnets you have clusters on):
 $ ./kafka-topics.sh
     --create
     --zookeeper <Replace_With_Your_ZookeeperConnectString>
@@ -20,17 +34,22 @@ $ ./kafka-topics.sh
     --partitions 1
     --topic <Replace_With_Your_Desired_Topic_Name_String>
 
-# 6) To connect the Kafka REST server to the Amazon MSK cluster, modify kafka-rest.properties in the directory (/home/ec2-user/confluent-5.3.1/etc/kafka-rest/) to point to your Amazon MSK’s <ZooKeeperConnectionString> and <BootstrapBrokerString> information.
+# 6) Test the end-to-end processes by producing and consuming messages to Amazon MSK. Complete the following steps:    
+    10.1) Navigate to the kafka/kafka_2.12-2.2.1/bin directory and start the Kafka console consumer. See the following code:
+            $ ./kafka-console-consumer.sh
+                --bootstrap-server <Replace_With_Your_BootstrapserversConnectString>
+                --consumer.config client.properties
+                --topic <Replace_With_Your_Desired_Topic_Name_String>
+                --from-beginning 
 
-# 7) Generate the server and client SSL Certificates. For more information, see Creating SLL Keys and Certificates on the Confluent website. Add the necessary property configurations to the kafka-rest.properties:
-    listeners=http://0.0.0.0:8082,https://0.0.0.0:8085
-    ssl.truststore.location=<Replace_With_Your_tuststore.jks>
-    ssl.truststore.password=<Replace_With_Your_tuststorepassword>
-    ssl.keystore.location=<Replace_With_Your_keystore.jks>
-    ssl.keystore.password=<Replace_With_Your_keystorepassword>
-    ssl.key.password=<Replace_With_Your_sslkeypassword>
+    10.2) Open another terminal and navigate to the kafka/kafka_2.12-2.2.1/bin directory and start the Kafka console producer. See the following code:
+            $ ./kafka-console-consumer.sh
+                --bootstrap-server <Replace_With_Your_BootstrapserversConnectString>
+                --consumer.config client.properties
+                --topic <Replace_With_Your_Desired_Topic_Name_String>
+                --from-beginning
 
-# 8) Configure API Gateway
+# 7) Configure API Gateway
     9.1) On the API Gateway console, choose Create API.
     9.2) For API type, choose REST API.
     9.3) Choose Build.
@@ -57,21 +76,4 @@ $ ./kafka-topics.sh
     9.24) Choose Deploy.
     9.25) Record the Invoke URL after you have deployed the API.
 
-# 9) Test the end-to-end processes by producing and consuming messages to Amazon MSK. Complete the following steps:
-    10.1) Go to the confluent-5.3.1/bin directory and start the kafka-rest service. See the following code:
-            $ ./kafka-rest-start /home/ec2-user/confluent-5.3.1/etc/kafka-rest/kafka-rest.properties
-        If the service already started, you can stop it with the following code:
-            $ ./kafka-rest-stop /home/ec2-user/confluent-5.3.1/etc/kafka-rest/kafka-rest.properties
-    10.2) Open another terminal and navigate to the kafka/kafka_2.12-2.2.1/bin directory and start the Kafka console consumer. See the following code:
-            $ ./kafka-console-consumer.sh
-                --bootstrap-server <Replace_With_Your_BootstrapserversConnectString>
-                --topic <Replace_With_Your_Desired_Topic_Name_String>
-                --from-beginning 
-        You can now produce messages using Postman. Postman is an HTTP client for testing web services.
-        Be sure to open TCP ports on the Kafka client security group for the system you are running Postman on.
-    10.3) Postman settings:
-        The URL is your API Gateway Invoke URL /topics/<Replace_With_Your_Desired_Topic_Name_String>
-        Under Headers, choose the key Content-Type with value application/vnd.kafka.json.v2+json
-        Under Body, select raw.
-        Choose JSON. Test post with the following JSON Object:
-        {"records":[{"value":{"deviceid": "AppleWatch4","heartrate": "72","timestamp":"2019-10-07 12:46:13"}}]} 
+# 8) Install the Kafka REST API of your choice
