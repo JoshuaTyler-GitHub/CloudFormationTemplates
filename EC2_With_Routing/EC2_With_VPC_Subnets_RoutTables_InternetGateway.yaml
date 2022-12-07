@@ -1,0 +1,425 @@
+Description:
+  This template deploys a VPC, with a pair of public and private subnets spread
+  across two Availability Zones. It deploys an internet gateway, with a default
+  route on the public subnets. It deploys a pair of NAT gateways (one in each AZ),
+  and default routes for them in the private subnets. It deploys an EC2 instance
+  and automatically boots up a Target-Dummy-API server.
+
+Parameters:
+  EnvironmentName:
+    Description: The environment name that is prefixed to resource names
+    Type: String
+    Default: Target-Dummy
+
+  # TargetDummyAPIsRepository: (Not yet implemented)
+  #   Description: The URL to the GitHub repository that hosts the Target-Dummy-APIs
+  #   Type: String
+  #   Default: https://github.com/Relyt-Official/TargetDummyAPIs.git
+
+  AccessKeyName:
+    Description: The name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: Can contain only ASCII characters
+    Default: Target-Dummy
+
+  AvailabilityZone1:
+    Description: The Availability Zone assigned to the VPC's PublicSubnet1 and PrivateSubnet1
+    Type: String
+    Default: us-east-1a
+
+  AvailabilityZone2:
+    Description: The Availability Zone assigned to the VPC's PublicSubnet2 and PrivateSubnet2
+    Type: String
+    Default: us-east-1b
+
+  VpcCIDR:
+    Description: The IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.192.0.0/16
+
+  PublicSubnet1CIDR:
+    Description: The IP range (CIDR notation) for the PublicSubnet1 Availability Zone
+    Type: String
+    Default: 10.192.10.0/24
+
+  PrivateSubnet1CIDR:
+    Description: The IP range (CIDR notation) for the PrivateSubnet1 Availability Zone
+    Type: String
+    Default: 10.192.20.0/24
+
+  PublicSubnet2CIDR:
+    Description: The IP range (CIDR notation) for the PublicSubnet2 Availability Zone
+    Type: String
+    Default: 10.192.11.0/24
+
+  PrivateSubnet2CIDR:
+    Description: The IP range (CIDR notation) for the PrivateSubnet2 Availability Zone
+    Type: String
+    Default: 10.192.21.0/24
+
+  IpAddressAccess:
+    Description: The IP address that will be allowed to communicate over exposed ports
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
+
+  EC2AMI:
+    Description: The AMI (Amazon Machine Image) used to run the EC2 instances
+    Type: AWS::EC2::Image::Id
+    Default: ami-0b0dcb5067f052a63
+
+  MicroEC2InstanceType:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 
+        Ref: VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value:
+            Ref: EnvironmentName
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value:
+            Ref: EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: InternetGateway
+      VpcId:
+        Ref: VPC
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      AvailabilityZone:
+        Ref: AvailabilityZone1
+      CidrBlock:
+        Ref: PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join: ["-", [!Ref EnvironmentName, "Public Subnet (AZ1)"]]
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      AvailabilityZone:
+        Ref: AvailabilityZone2
+      CidrBlock:
+        Ref: PublicSubnet2CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join: ["-", [!Ref EnvironmentName, "Public Subnet (AZ2)"]]
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      AvailabilityZone:
+        Ref: AvailabilityZone1
+      CidrBlock:
+        Ref: PrivateSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join: ["-", [!Ref EnvironmentName, "Private Subnet (AZ1)"]]
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      AvailabilityZone:
+        Ref: AvailabilityZone2
+      CidrBlock:
+        Ref: PrivateSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join: ["-", [!Ref EnvironmentName, "Private Subnet (AZ2)"]]
+
+  NatGateway1EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway2EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway1EIP.AllocationId
+      SubnetId:
+        Ref: PublicSubnet1
+
+  NatGateway2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway2EIP.AllocationId
+      SubnetId:
+        Ref: PublicSubnet2
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join: ["-", [!Ref EnvironmentName, "Public Routes"]]
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: PublicSubnet2
+
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join: ["-", [!Ref EnvironmentName, "Private Routes (AZ1)"]]
+
+  DefaultPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NatGateway1
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable1
+      SubnetId:
+        Ref: PrivateSubnet1
+
+  PrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join: ["-", [!Ref EnvironmentName, "Private Routes (AZ2)"]]
+
+  DefaultPrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NatGateway2
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable2
+      SubnetId:
+        Ref: PrivateSubnet2
+
+  NoIngressSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "SG-No-Ingress"
+      GroupDescription: "Security group with no ingress rule"
+      VpcId:
+        Ref: VPC
+
+  SSHAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "SG-SSH-Only"
+      GroupDescription: "Security group with SSH access via port 22."
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp:
+          Ref: IpAddressAccess
+
+  HTTPSAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "SG-HTTPS-Only"
+      GroupDescription: "Security group with HTTPS access via port 4321."
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 4321
+        ToPort: 4321
+        CidrIp:
+          Ref: IpAddressAccess
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: ''
+          Effect: Allow
+          Principal:
+            Service: ec2.amazonaws.com
+          Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+  
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName:
+        Fn::Join: ["-", [!Ref EnvironmentName, "EC2InstanceProfile"]]
+      Roles:
+      - Ref: EC2Role
+
+  MicroEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType:
+        Ref: MicroEC2InstanceType
+      KeyName:
+        Ref: AccessKeyName
+      IamInstanceProfile:
+        Ref: EC2InstanceProfile
+      AvailabilityZone:
+        Ref: AvailabilityZone1
+      SubnetId:
+        Ref: PublicSubnet1
+      SecurityGroupIds:
+      - Fn::GetAtt:
+        - HTTPSAccessSecurityGroup
+        - GroupId
+      ImageId: 
+        Ref: EC2AMI
+      UserData:
+        Fn::Base64: "
+          #!/bin/bash -xe \n
+            exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1 \n
+            echo \"Updating EC2 Instance . . .\" \n
+            yum update -y \n
+            echo \"Installing Git . . .\" \n
+            yum install git \n
+            echo \"Installing NVM . . .\" \n
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash \n
+            . ~/.nvm/nvm.sh \n
+            echo \"Installing Node . . .\" \n
+            nvm install node \n
+            echo \"Installing Target-Dummy-APIs . . .\" \n
+            cd /home/ec2-user \n
+            mkdir TargetDummyAPIs
+            cd /home/ec2-user/TargetDummyAPIs
+            curl -o- https://raw.github.com/Relyt-Official/TargetDummyAPIs.git | bash \n
+            echo \"Starting Target-Dummy-API: \"[hello-world]\" ...\" \n
+            cd /home/ec2-user/TargetDummyAPIs/hello-world
+            npm start \n
+          "
+
+Outputs:
+  VPC:
+    Description: A reference to the created VPC
+    Value:
+      Ref: VPC
+
+  PublicSubnets:
+    Description: A list of the public subnets
+    Value:
+      Fn::Join: [",", [!Ref PublicSubnet1, !Ref PublicSubnet2]]
+
+  PrivateSubnets:
+    Description: A list of the private subnets
+    Value:
+      Fn::Join: [",", [!Ref PrivateSubnet1, !Ref PrivateSubnet2]]
+
+  PublicSubnet1:
+    Description: A reference to the public subnet in the 1st Availability Zone
+    Value:
+      Ref: PublicSubnet1
+
+  PublicSubnet2:
+    Description: A reference to the public subnet in the 2nd Availability Zone
+    Value:
+      Ref: PublicSubnet2
+
+  PrivateSubnet1:
+    Description: A reference to the private subnet in the 1st Availability Zone
+    Value:
+      Ref: PrivateSubnet1
+
+  PrivateSubnet2:
+    Description: A reference to the private subnet in the 2nd Availability Zone
+    Value:
+      Ref: PrivateSubnet2
+
+  NoIngressSecurityGroup:
+    Description: Security group with no ingress rule
+    Value:
+      Ref: NoIngressSecurityGroup
